@@ -2,8 +2,10 @@
 
 // load modules
 const express = require('express');
+const res = require('express/lib/response');
 const morgan = require('morgan');
 const { models, sequelize  } = require('./models')
+
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
 
@@ -12,6 +14,17 @@ const app = express();
 
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
+
+app.use(express.json());
+
+const userRouter = require('./routes');
+
+app.use("/api/users", userRouter);
+
+
+
+
+
 
   (async () =>{
   // await sequelize.sync();
@@ -29,6 +42,8 @@ app.get('/', (req, res) => {
     message: 'Welcome to the REST API project!',
   });
 });
+
+
 
 // send 404 if no other route matched
 app.use((req, res) => {
