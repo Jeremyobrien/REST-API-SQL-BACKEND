@@ -5,6 +5,7 @@ const express = require('express');
 const res = require('express/lib/response');
 const morgan = require('morgan');
 const { models, sequelize  } = require('./models')
+let createError = require('http-errors')
 
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
@@ -17,9 +18,10 @@ app.use(morgan('dev'));
 
 app.use(express.json());
 
-const userRouter = require('./routes');
-
+const userRouter = require('./routes/userRoutes');
+const courseRouter = require('./routes/courseRoutes');
 app.use("/api/users", userRouter);
+app.use("/api/courses", courseRouter);
 
 
 
@@ -37,19 +39,19 @@ app.use("/api/users", userRouter);
 })();
 
 // setup a friendly greeting for the root route
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Welcome to the REST API project!',
-  });
-});
+// app.get('/', (req, res) => {
+//   res.json({
+//     message: 'Welcome to the REST API project!',
+//   });
+// });
 
 
 
 // send 404 if no other route matched
-app.use((req, res) => {
-  res.status(404).json({
-    message: 'Route Not Found',
-  });
+app.use((req, res, next) => {
+  const err = new Error('Route Not Found');
+  err.status = 404;
+  next(err);
 });
 
 // setup a global error handler

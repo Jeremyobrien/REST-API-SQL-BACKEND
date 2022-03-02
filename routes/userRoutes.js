@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { users, courses } = require('./seed/data.json')
-const { User, Course } = require('./models')
+const { users } = require('../seed/data.json')
+const { User } = require('../models')
 
 //Handle requests and pass them to global handler
 function asyncHandler(cb) {
@@ -27,7 +27,8 @@ router.post('/', asyncHandler( async (req, res)=> {
       password: req.body.password
     });
     if (user) {
-      res.status(201).json(user);
+       await users.push(user);
+      res.status(201).redirect('/api/users');
     } else {
       res.status(400).json({ message: "Please enter all requested information for new 'User'"});
     }
