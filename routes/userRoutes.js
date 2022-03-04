@@ -28,11 +28,12 @@ router.post('/', asyncHandler( async (req, res)=> {
     });
     if (user) {
        await users.push(user);
-      res.status(201).redirect('/api/users');
+       await res.status(201)
+                .location('/')
+                .end();
     } else {
       res.status(400).json({ message: "Please enter all requested information for new 'User'"});
     }
-
 }));
 
   module.exports = router;

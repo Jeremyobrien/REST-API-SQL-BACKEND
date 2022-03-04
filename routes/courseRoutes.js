@@ -37,9 +37,12 @@ router.post('/', asyncHandler(async (req, res)=> {
             description: req.body.description,
             estimatedTime: req.body.estimatedTime,
             materialsNeeded: req.body.materialsNeeded,
-            // userId: req.body.userId
+            userId: req.body.userId
         });
-        res.status(201).json(course);
+        await courses.push(course);
+        await res.status(201)
+                 .location(`/${course.id}`)
+                 .end();
     } else {
         res.status(400).json({message: "Title and Description required"});
     }
