@@ -17,7 +17,7 @@ module.exports = (sequelize) => {
       allowNull: false,
       validate:{
         notEmpty: {
-          msg:"Please enter a title"
+          msg:"Please enter a 'first name'"
         }
       }
     },
@@ -26,7 +26,7 @@ module.exports = (sequelize) => {
       allowNull: false,
       validate:{
         notEmpty: {
-          msg:"Please enter author's name"
+          msg:"Please enter a 'last name'"
         }
       }
     },

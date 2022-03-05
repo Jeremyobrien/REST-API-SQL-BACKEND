@@ -44,7 +44,7 @@ router.post('/', asyncHandler(async (req, res)=> {
                  .location(`/${course.id}`)
                  .end();
     } else {
-        res.status(400).json({message: "Title and Description required"});
+        res.status(400).json({message: '"Title" and "Description" required'});
     }
 }));
 

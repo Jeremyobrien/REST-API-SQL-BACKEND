@@ -7,6 +7,7 @@ const morgan = require('morgan');
 const { models, sequelize  } = require('./models')
 let createError = require('http-errors')
 
+
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
 
