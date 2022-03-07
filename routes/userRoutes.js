@@ -3,10 +3,11 @@ const router = express.Router();
 const { users } = require('../seed/data.json')
 const { User } = require('../models')
 const bcrypt = require('bcrypt');
-const { check, validationResult } = require('express-validator');
+const { authenticateUser } = require('../middleware/auth-user');
+const { body, check, validationResult } = require('express-validator');
 
-const bodyParser = require('body-parser')
-const urlencodedParser = bodyParser.urlencoded({ extended: false })
+// const bodyParser = require('body-parser')
+// const urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 //Handle requests and pass them to global handler
 function asyncHandler(cb) {
@@ -20,37 +21,46 @@ function asyncHandler(cb) {
   }
 }
 
-router.get('/', asyncHandler( async (req, res)=> {
-   await res.json({ users });
+router.get('/', authenticateUser, asyncHandler( async (req, res)=> {
+   const user = req.currentUser;
+   res.json({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      emailAddress: user.emailAddress,
+      password: user.password
+   })
   }))
 
-router.post('/', asyncHandler( async (req, res)=> {
+
+router.post('/', [
+  check('firstName')
+    .exists({ checkNull: true, checkFalsy: true })
+    .withMessage('Please provide a value for "first name"'),
+  check('lastName')
+    .exists({ checkNull: true, checkFalsy: true })
+    .withMessage('Please provide a value for "last name"'),
+  check('emailAddress')
+    .exists({ checkNull: true, checkFalsy: true })
+    .withMessage('Please provide a value for "email"')
+    .isEmail()
+    .withMessage('Please provide a valid email address'),
+  check('password')
+    .exists({ checkNull: true, checkFalsy: true })
+    .withMessage('Please provide a value for "password"')
+], asyncHandler( async (req, res)=> {
+    const errors = validationResult(req);
     const data = req.body;
-    const errors = [];
-    if (!data.firstName){
-      errors.push('Please provide a properly formatted "first name"');
-    }
-    if (!data.lastName){
-      errors.push('Please provide a "last name"');
-    }
-    if (!data.emailAddress){
-      errors.push('Please provide a valid "email"');
-    }
-    if (!data.password){
-      errors.push('Please provide a "password"');
-    } else if (password.length < 8 || password.length > 20) {
-      errors.push('Your password should be between 8 and 20 characters');
+    if ( !errors.isEmpty()) {
+      const errorMessages = errors.array().map( error => error.msg);
+      res.status(400).json({ errors: errorMessages });
     } else {
-      data.password = bcrypt.hashSync(data.password, 10);
-    }
-    if (errors.length > 0) {
-      res.status(400).json({ errors });
-    } else {
+      const encrytedPassword = data.password = bcrypt.hashSync(data.password, 10);
       const user = await User.create({
         firstName: data.firstName,
         lastName: data.lastName,
         emailAddress: data.emailAddress,
-        password: data.password
+        password: encrytedPassword
       });
       await users.push(user);
       await res.status(201)

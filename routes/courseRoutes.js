@@ -3,6 +3,7 @@ const router = express.Router();
 const { courses } = require('../seed/data.json')
 const { Course } = require('../models')
 let createError = require('http-errors')
+const { check, validationResult } = require('express-validator');
 
 //Handle requests and pass them to global handler
 function asyncHandler(cb) {
@@ -30,25 +31,39 @@ router.get('/:id', asyncHandler(async (req, res) =>{
     }
 }));
 
-router.post('/', asyncHandler(async (req, res)=> {
-    if (req.body.title && req.body.description){
-        const course = await Course.create({
-            title: req.body.title,
-            description: req.body.description,
-            estimatedTime: req.body.estimatedTime,
-            materialsNeeded: req.body.materialsNeeded,
-            userId: req.body.userId
-        });
-        await courses.push(course);
-        await res.status(201)
-                 .location(`/${course.id}`)
-                 .end();
-    } else {
-        res.status(400).json({message: '"Title" and "Description" required'});
+router.post('/', [
+    check('title')
+        .exists()
+        .withMessage('Please provide a value for "title"'),
+    check('description')
+        .exists()
+        .withMessage('Please provide a value for "description"')
+], asyncHandler(async (req, res)=> {
+    const errors = validationResult(req);
+    const data = req.body;
+    if ( !errors.isEmpty()) {
+      const errorMessages = errors.array().map( error => error.msg);
+      res.status(400).json({ errors: errorMessages });
     }
+        const course = await Course.create({
+            title: data.title,
+            description: data.description,
+            estimatedTime: data.estimatedTime,
+            materialsNeeded: data.materialsNeeded,
+            userId: data.userId
+        });
+        if (course) {
+            await courses.push(course);
+            await res.status(201)
+                     .location(`/${course.id}`)
+                     .end();
+        }
 }));
 
 router.put('/:id', asyncHandler( async (req, res) => {
+    if ( !req.body.title || !req.body.description) {
+        res.status(400).json({ message: '"Title" and "Description" values required'})
+    } else {
     const course = await Course.findByPk(req.params.id);
     if (course) {
         course.title = req.body.title;
@@ -58,9 +73,8 @@ router.put('/:id', asyncHandler( async (req, res) => {
         course.userId = req.body.userId;
         await course.save();
         res.status(204).end();
-    } else {
-        res.status(404).json({ message: "Course Not Found"})
     }
+}
 }))
 
 router.delete('/:id', asyncHandler( async (req, res) => {
