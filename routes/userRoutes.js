@@ -4,12 +4,10 @@ const { users } = require('../seed/data.json')
 const { User } = require('../models')
 const bcrypt = require('bcrypt');
 const { authenticateUser } = require('../middleware/auth-user');
-const { body, check, validationResult } = require('express-validator');
+const { check, validationResult } = require('express-validator');
 
-// const bodyParser = require('body-parser')
-// const urlencodedParser = bodyParser.urlencoded({ extended: false })
 
-//Handle requests and pass them to global handler
+//Handles requests and passes errors to global handler
 function asyncHandler(cb) {
   return async (req, res, next) => {
     try {
@@ -21,18 +19,13 @@ function asyncHandler(cb) {
   }
 }
 
+//retrieves authenticated user's data
 router.get('/', authenticateUser, asyncHandler( async (req, res)=> {
-   const user = req.currentUser;
-   res.json({
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      emailAddress: user.emailAddress,
-      password: user.password
-   })
+   const user = await req.currentUser;
+   res.json({ user });
   }))
 
-
+// validates user input to create a new user
 router.post('/', [
   check('firstName')
     .exists({ checkNull: true, checkFalsy: true })
@@ -62,10 +55,10 @@ router.post('/', [
         emailAddress: data.emailAddress,
         password: encrytedPassword
       });
-      await users.push(user);
+      users.push(user);
       await res.status(201)
-                .location('/')
-                .end();
+               .location('/')
+               .end();
     }
 }));
 

@@ -7,10 +7,8 @@ const { User } = require('../models');
 exports.authenticateUser = async (req, res, next) => {
   let message;
   const credentials = auth(req);
-  console.log(credentials)
   if (credentials) {
     const user = await User.findOne({ where: {emailAddress: credentials.name } });
-    console.log(user)
     if (user) {
         const authenticated = bcrypt.compareSync(credentials.pass, user.password);
         if (authenticated) {

@@ -3,6 +3,7 @@ const {
   Model,
   DataTypes
 } = require('sequelize');
+
 //User Model
 module.exports = (sequelize) => {
   class User extends Model {};

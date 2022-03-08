@@ -3,7 +3,8 @@ const {
   Model,
   DataTypes
 } = require('sequelize');
-//User Model
+
+//Course Model
 module.exports = (sequelize) => {
   class Course extends Model {};
   Course.init({

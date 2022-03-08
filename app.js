@@ -4,8 +4,7 @@
 const express = require('express');
 const res = require('express/lib/response');
 const morgan = require('morgan');
-const { models, sequelize  } = require('./models')
-let createError = require('http-errors')
+const { sequelize } = require('./models');
 
 
 // variable to enable global error logging
@@ -26,13 +25,14 @@ app.get('/', (req, res) => {
   });
 });
 
+// route middleware
 const userRouter = require('./routes/userRoutes');
 const courseRouter = require('./routes/courseRoutes');
 app.use("/api/users", userRouter);
 app.use("/api/courses", courseRouter);
 
+//sync app with database
 (async () =>{
-  // await sequelize.sync();
   try {
     await sequelize.authenticate();
     console.log('Successfully connected to the database');
