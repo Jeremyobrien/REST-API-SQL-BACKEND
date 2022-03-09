@@ -18,13 +18,15 @@ function asyncHandler(cb) {
 
 //returns list of courses
 router.get('/', asyncHandler(async (req, res) =>{
-    const courses = await Course.findAll();
+    const courses = await Course.findAll({
+                            attributes: ['title', 'description', 'estimatedTime', 'materialsNeeded', 'userId']
+                        });
     res.json(courses);
 }));
 
 //returns a specific course given the requested id
 router.get('/:id', asyncHandler(async (req, res) =>{
-    const course = await Course.findByPk(req.params.id);
+    const course = await Course.findByPk(req.params.id, { attributes: ['title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'] });
     if (course){
         res.json(course);
     } else {
@@ -66,8 +68,9 @@ router.put('/:id', authenticateUser, asyncHandler( async (req, res) => {
     if ( !req.body.title || !req.body.description) {
         res.status(400).json({ message: '"Title" and "Description" values required'})
     } else {
+    const user = await req.currentUser;
     const course = await Course.findByPk(req.params.id);
-    if (course) {
+    if (course && user.id === course.userId) {
         course.title = req.body.title;
         course.description = req.body.description;
         course.estimatedTime = req.body.estimatedTime;
@@ -75,18 +78,21 @@ router.put('/:id', authenticateUser, asyncHandler( async (req, res) => {
         course.userId = req.body.userId;
         await course.save();
         res.status(204).end();
+    } else {
+        res.status(403).json({ message: "You are not authorized to update this course information"});
     }
 }
 }))
 
 //Allows authenticated users to delete courses
 router.delete('/:id', authenticateUser, asyncHandler( async (req, res) => {
+    const user = await req.currentUser;
     const course = await Course.findByPk(req.params.id);
-    if (course) {
+    if (course && user.id === course.userId) {
         await course.destroy();
         res.status(204).end();
     } else {
-        res.status(404).json({ message: "Course Not Found"})
+        res.status(403).json({ message: "You are not authorized to delete this course"})
     }
 }));
 
