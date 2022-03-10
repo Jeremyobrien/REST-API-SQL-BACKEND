@@ -20,7 +20,7 @@ function asyncHandler(cb) {
 router.get('/', asyncHandler(async (req, res) =>{
     const courses = await Course.findAll({
                             attributes: ['title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'],
-                            include: [{model: User, as: 'courseOwner', attributes: ['firstName', 'lastName', 'emailAddress']}]
+                            include: [{model: User, as: 'userInfo', attributes: ['firstName', 'lastName', 'emailAddress']}]
                         });
     res.json(courses);
 }));
@@ -28,7 +28,7 @@ router.get('/', asyncHandler(async (req, res) =>{
 //returns a specific course given the requested id
 router.get('/:id', asyncHandler(async (req, res) =>{
     const course = await Course.findByPk(req.params.id, { attributes: ['title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'],
-                                                          include: [{model: User, as: 'courseOwner', attributes: ['firstName', 'lastName', 'emailAddress']}]                                                   
+                                                          include: [{model: User, as: 'userInfo', attributes: ['firstName', 'lastName', 'emailAddress']}]                                                   
                                                         });
     if (course){
         res.location(`courses/${req.params.id}`)
