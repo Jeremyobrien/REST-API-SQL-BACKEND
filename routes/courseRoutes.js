@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Course } = require('../models');
+const { Course, User } = require('../models');
 const { check, validationResult } = require('express-validator');
 const { authenticateUser } = require('../middleware/auth-user');
 
@@ -19,18 +19,23 @@ function asyncHandler(cb) {
 //returns list of courses
 router.get('/', asyncHandler(async (req, res) =>{
     const courses = await Course.findAll({
-                            attributes: ['title', 'description', 'estimatedTime', 'materialsNeeded', 'userId']
+                            attributes: ['title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'],
+                            include: [{model: User, as: 'courseOwner', attributes: ['firstName', 'lastName', 'emailAddress']}]
                         });
     res.json(courses);
 }));
 
 //returns a specific course given the requested id
 router.get('/:id', asyncHandler(async (req, res) =>{
-    const course = await Course.findByPk(req.params.id, { attributes: ['title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'] });
+    const course = await Course.findByPk(req.params.id, { attributes: ['title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'],
+                                                          include: [{model: User, as: 'courseOwner', attributes: ['firstName', 'lastName', 'emailAddress']}]                                                   
+                                                        });
     if (course){
-        res.json(course);
+        res.location(`courses/${req.params.id}`)
+           .json(course);
     } else {
-        res.status(404).json({ message: 'The course you requested cannot be found.'});
+        res.status(404)
+           .json({ message: 'The course you requested cannot be found.'});
     }
 }));
 
